@@ -349,7 +349,8 @@
       const progress = useSharedValue(0)
       useEffect(() => {
         progress.value = withTiming(checked ? 1 : 0, {
-          duration: Easing.linear
+          duration: checked ? 300 : 100,
+          easing: Easing.linear
         })
       }, [checked])
 
@@ -409,3 +410,26 @@
   - On `babel.config.js`, add `plugins: ['react-native-reanimated/plugin']`
 
   - `expo r -c`: In order to clear caches associated with the project
+
+## Make the checkbox able to toggle
+
+- On `/src/screens/main.tsx`
+
+  - ```tsx
+    import React, {useCallback, useState} from 'react';
+    import {Pressable} from 'react-native';
+    ...
+    export default function MainScreen() {
+      const [checked, setChecked]  = useState(false);
+      const handlePressCheckbox = useCallback(() => {
+        setChecked(prev => !prev)
+      }, []);
+      return (
+        ...
+            <Box w="100px" h="100px">
+              <Pressable onPress={handlePressCheckbox} >
+                <AnimatedCheckbox checked={checked} />
+              </Pressable>
+            </Box>
+            ...
+    ```

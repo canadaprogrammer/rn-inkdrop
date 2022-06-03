@@ -22,7 +22,8 @@ const AnimatedCheckbox = (props: Props) => {
   const progress = useSharedValue(0);
   useEffect(() => {
     progress.value = withTiming(checked ? 1 : 0, {
-      duration: Easing.linear,
+      duration: checked ? 300 : 100,
+      easing: Easing.linear,
     })
   }, [checked]);
 
