@@ -433,3 +433,69 @@
             </Box>
             ...
     ```
+
+## Animate the Checkbox
+
+- Create `/src/components/animated-stroke.tsx`
+
+  - ```tsx
+    import React, { useRef, useState } from 'react'
+    import Animated, { Easing, useAnimatedProps } from 'react-native-reanimated'
+    import { Path, PathProps } from 'react-native-svg'
+
+    interface AnimatedStrokeProps extends PathProps {
+      progress: Animated.SharedValue<number>
+    }
+
+    const AnimatedPath = Animated.createAnimatedComponent(Path)
+
+    const AnimatedStroke = ({
+      progress,
+      ...pathProps
+    }: AnimatedStrokeProps) => {
+      const [length, setLength] = useState(0)
+      const ref = useRef<typeof AnimatedPath>(null)
+      const animatedProps = useAnimatedProps(() => ({
+        strokeDashoffset: Math.max(
+          0,
+          length -
+            length * Easing.bezierFn(0.37, 0, 0.63, 1)(progress.value) -
+            0.1
+        )
+      }))
+
+      return (
+        <AnimatedPath
+          animatedProps={animatedProps}
+          // @ts-ignore
+          onLayout={() => setLength(ref.current!.getTotalLength())}
+          // @ts-ignore
+          ref={ref}
+          strokeDasharray={length}
+          {...pathProps}
+        />
+      )
+    }
+
+    export default AnimatedStroke
+    ```
+
+- On `/src/components/animated-checkbox.tsx`
+
+  - ```tsx
+    ...
+    import AnimatedStroke from './animated-stroke';
+    ...
+
+          <AnimatedStroke
+            progress={progress}
+            d={checkMarkPath}
+            stroke={checkmarkColor}
+            strokeWidth={10}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            strokeOpacity={checked || false ? 1 : 0}
+          />
+        </Svg>
+        ...
+    ```

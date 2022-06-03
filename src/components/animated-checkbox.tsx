@@ -1,6 +1,7 @@
 import React, {useEffect, memo} from 'react';
 import Animated, { Easing, useSharedValue, useAnimatedProps, withTiming, interpolateColor} from 'react-native-reanimated';
 import Svg, {Path, Defs, ClipPath, G} from 'react-native-svg';
+import AnimatedStroke from './animated-stroke';
 
 const MARGIN = 10;
 const vWidth = 64 + MARGIN;
@@ -46,8 +47,22 @@ const AnimatedCheckbox = (props: Props) => {
 
   return (
     <Svg viewBox={[-MARGIN, -MARGIN,  vWidth + MARGIN, vHeight + MARGIN].join(' ')}>
-      <AnimatedPath d={outlineBoxPath} strokeWidth={7} strokeLinejoin="round" strokeLinecap="round" animatedProps={animatedBoxProps} />
-      <Path d={checkMarkPath} stroke={checkmarkColor}/>
+      <AnimatedPath 
+        d={outlineBoxPath} 
+        strokeWidth={7} 
+        strokeLinejoin="round" 
+        strokeLinecap="round" 
+        animatedProps={animatedBoxProps} 
+      />
+      <AnimatedStroke 
+        progress={progress} 
+        d={checkMarkPath} 
+        stroke={checkmarkColor} 
+        strokeWidth={10} 
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        strokeOpacity={checked || false ? 1 : 0}
+      />
     </Svg>
   )
 }
