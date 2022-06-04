@@ -547,3 +547,80 @@
       }
     })
     ```
+
+### Shared Values
+
+- Shared Values serve a similar purpose to React Native's `Animated.Value`s. They can **carry data**, **provide a way to react to changes**, and also **drive animation**.
+
+- Carrying data
+
+  - In order to update Shared Value from the React Native thread or from a worklet running on the UI thread, you should set a new value onto the `.value` property.
+
+- Providing a notion of reactiveness to Reanimated framework
+
+  - Updates made to Shared Values can trigger corresponding code execution on the UI thread, that can further result in starting animations, view updates, etc.
+
+  - The reactiveness layer has been designed to be fully transparent from the developer perspective. It is based on the concept of Shared Values being captured by reactive worklets.
+
+  - Currently, there are two ways how you can create a reactive worklet. This can be done either by using `useAnimatedStyle` or `useDerivedValue` hooks. When a Shared Value is captured by a worklet provided to these hooks, the worklet will re-run upon the Shared Value change.
+
+- Driving animations
+
+  - The library comes bundled with a number of utility methods that help you run and customize animations. One of the ways for animation to be launched is by starting an animated transition of a Shared Value. This can be done by wrapping target value with one of the animation utility methods from reanimated library (e.g. `withTiming` or `withSpring`).
+
+- Interrupting animations
+
+  - We can make all animations fully interruptible. This means that you can make updates to the Shared Value even if it is currently running the animation without worrying that this will cause an unexpected and sudden animation glitch.
+
+- Cancelling animations
+
+  - There are cases in which we want to stop the currently running animation without starting a new one. In reanimated, this can be done using `cancelAnimation` method. Animations can be cancelled both from the UI and from React Native's JS thread.
+
+## API Reference
+
+### `useSharedValue(initialValue)`
+
+- initialValue: [number|string|bool|Object|Array|Function]
+
+- To create a reference to a JavaScript Value that can be shared with workets.
+
+- Shared Values are just javascript objects, so you can pass them to children components or define your own hooks that create them.
+
+- The first argument takes the initial value. The value then can be read from the Shared Value reference using `.value` attribute.
+
+- The hook returns a reference to shared value initialized with the provided data. The reference is an object with `.value` property, that can be accessed and modified from worklets, but also updated directly from the main JS thread.
+
+### `useAnimatedProps()`
+
+- It works for a non-style view properties. It allows for defining a set of native view properties that can be updated on the UI thread as a response to a Shared Value change.
+
+- Only "native" properties of "native views" can be set via `useAnimatedProps`. The most common usecase for this hook is when we want to animate properties of some third-party native component, since most of the properties for the core React Native components are a part of the styles anyways (at least the properties for which it makes sense to be animated).
+
+- In order to connect the `useAnimatedProps` hook result to a view, you need to pass it as `animatedProps` property to the `Animated` version of the component (e.g., `Animated.View`). The `animatedProps` property is added when a native component is wrapped with `Animated.createAnimatedComponent`.
+
+### `withTiming(toValue, options, callback)`
+
+- Starts a time based animation.
+
+- toValue: [number | string]
+
+- options: [object]
+
+  - | Options  | Default            | Description                                            |
+    | -------- | ------------------ | ------------------------------------------------------ |
+    | duration | 300                | How long the animation should last                     |
+    | easing   | in-out quad easing | Worklet that drives the easing curve for the animation |
+
+  - For `easing` parameter we recommend using one of the pre-configured worklets defined in `Easing` module.
+
+- callback [function](optional)
+
+  - The provided function will be called when the animation is complete. In case the animation is cancelled, the callback will receive `false` as the argument, otherwise it will receive `true`.
+
+### `Easing`
+
+- If easing property is not provided, it defaults to linear easing function.
+
+### `interpolateColor`
+
+- It allows you to interpolate between colors. Color interpolation is quite a bit harder to reason about than interpolating with number values.
