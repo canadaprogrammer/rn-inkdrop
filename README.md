@@ -499,3 +499,51 @@
         </Svg>
         ...
     ```
+
+# React Native Reanimated Library
+
+## Fundamentals
+
+- Reanimated v2 only supports react-native 0.62+.
+
+- It allows for crating smooth animations and interactions that runs on the UI thread.
+
+### Installation
+
+- `yarn add react-native-reanimated`
+
+- Add Reanimated's babel plugin to `babel.config.js`
+
+  - ```js
+    module.exports = {
+      ...
+      plugins: [
+        ...
+        'react-native-reanimated/plugin',
+      ],
+    };
+    ```
+
+### Worklets
+
+- interactions and animations are no longer written using unintuitive declarative API, instead they can be written in pure JS, in a form of so-called "worklets". Worklets are pieces of JS code that we extract from the main react-native code and run in a separate JS context on the main thread. Because of that, worklets have some limitations as to what part of the JS context they can access (we don't want to load the entire JS bundle into the context which runs on the UI thread).
+
+- The only thing that is needed is for that function to have “worklet” directive at the top.
+
+  - ```js
+    function someWorklet(greeting) {
+      'worklet'
+      console.log("Hey I'm running on the UI thread")
+    }
+    ```
+
+- What you will be using most of the time instead, are worklets that can be constructed by one of the **hooks from Reanimated API**, e.g. `useAnimatedStyle`, `useDerivedValue`, `useAnimatedGestureHandler`, etc. When using one of the hooks listed in the Reanimated API Reference, we automatically detect that the provided method is a worklet and do not require the directive to be specified. The method provided to the hook will be turned into a worklet and executed on the UI thread automatically.
+
+  - ```js
+    const style = useAnimatedStyle(() => {
+      console.log('Running on the UI thread')
+      return {
+        opacity: 0.5
+      }
+    })
+    ```
