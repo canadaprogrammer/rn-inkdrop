@@ -331,7 +331,7 @@
     const vWidth = 64 + MARGIN
     const vHeight = 64 + MARGIN
     const outlineBoxPath =
-      'M 16 1.000003814697266 C 11.50931167602539 1.000003814697266 7.934459686279297 2.303993225097656 5.374759674072266 4.875751495361328 C 3.114681243896484 7.146492004394531 2.046501159667969 10.02813339233398 1.548389434814453 12.04567337036133 C 0.9983787536621094 14.27346420288086 0.9999008178710938 15.97699356079102 0.999969482421875 15.99260330200195 L 1 16.00000381469727 L 1 48 C 1 51.43319320678711 1.777229309082031 54.34819412231445 3.310100555419922 56.66401290893555 C 4.529571533203125 58.50635147094727 6.237819671630859 59.99112319946289 8.387401580810547 61.07707214355469 C 12.13222122192383 62.96893310546875 15.96281051635742 62.99991226196289 16 63.00000381469727 L 48 63.00000381469727 C 51.4055290222168 63.00000381469727 54.30319976806641 62.22293090820312 56.61251831054688 60.69038391113281 C 58.45114898681641 59.47019195556641 59.93848037719727 57.7607421875 61.03319931030273 55.60949325561523 C 62.92019653320312 51.90135192871094 62.99821472167969 48.10969543457031 62.99999618530273 47.99512481689453 C 62.99979400634766 47.62334823608398 62.99134826660156 31.70576858520508 63 15.99945449829102 C 63.00189208984375 12.56830215454102 62.22587966918945 9.654644012451172 60.69353866577148 7.339412689208984 C 59.47441101074219 5.497402191162109 57.7659912109375 4.01251220703125 55.61573028564453 2.925971984863281 C 51.86962890625 1.033054351806641 48.03670120239258 1.000114440917969 48 1.000003814697266 L 16 1.000003814697266 M 16 0 C 32.1184196472168 0 48 0 48 0 C 48 0 64.00879669189453 0.00417327880859375 64 16.00000381469727 C 63.99119186401367 31.99583435058594 64 48 64 48 C 64 48 63.88360214233398 64 48 64 C 32.11640167236328 64 16 64 16 64 C 16 64 0 64.00416564941406 0 48 C 0 31.99583435058594 0 16.00000381469727 0 16.00000381469727 C 0 16.00000381469727 -0.1184310913085938 0 16 0 Z'
+      'M 48 63.5 L 16 63.5 C 15.96487045288086 63.49967956542969 12.04551029205322 63.44352722167969 8.194589614868164 61.49388885498047 C 5.95782995223999 60.36145782470703 4.177969932556152 58.81771087646484 2.904439926147461 56.905517578125 C 1.308969974517822 54.50991821289062 0.5 51.51366806030273 0.5 48 L 0.5 15.99999904632568 C 0.5000600218772888 15.9613094329834 0.528439998626709 12.04286861419678 2.463890075683594 8.193099021911621 C 3.58801007270813 5.957129001617432 5.129650115966797 4.177848815917969 7.04596996307373 2.904659032821655 C 9.447609901428223 1.309049010276794 12.46018028259277 0.4999989867210388 16 0.4999989867210388 L 48 0.4999989867210388 L 48.01026153564453 0.4999689757823944 C 48.17554092407227 0.4999689757823944 52.10235977172852 0.5225789546966553 55.94820022583008 2.488668918609619 C 58.14802169799805 3.613269090652466 59.89707183837891 5.155319213867188 61.14677047729492 7.071999073028564 C 62.70825958251953 9.466889381408691 63.5 12.47069931030273 63.5 15.99999904632568 L 63.5 48 C 63.49969100952148 48.03524780273438 63.44451141357422 51.9545783996582 61.495361328125 55.80546951293945 C 60.36322021484375 58.04219818115234 58.81954956054688 59.82204055786133 56.90721130371094 61.09555053710938 C 54.51139831542969 62.6910285949707 51.51457977294922 63.5 48 63.5 Z'
     const checkMarkPath =
       'M8,24S24.1,38.26,24,48c1.166-3.271,3.654-11.965,8.721-21.113C38.655,16.169,48.431,4.892,64,3.065'
 
@@ -365,7 +365,7 @@
           fill: interpolateColor(
             Easing.bezier(0.16, 1, 0.3, 1).factory()(progress.value),
             [0, 1],
-            ['#000000', highlightColor],
+            ['rgba(0,0,0,0)', highlightColor],
             'RGB'
           )
         }),
@@ -486,19 +486,132 @@
     ...
     import AnimatedStroke from './animated-stroke';
     ...
-
+        <Svg viewBox={[-MARGIN, -MARGIN,  vWidth + MARGIN, vHeight + MARGIN].join(' ')}>
+          <Defs>
+            <ClipPath id="clipPath">
+              <Path
+                fill="white"
+                stroke="gray"
+                strokeLinejoin="round"
+                strokeLinecap="round"
+                d={outlineBoxPath}
+              />
+            </ClipPath>
+          </Defs>
           <AnimatedStroke
             progress={progress}
             d={checkMarkPath}
-            stroke={checkmarkColor}
+            stroke={highlightColor}
             strokeWidth={10}
             strokeLinejoin="round"
             strokeLinecap="round"
             strokeOpacity={checked || false ? 1 : 0}
           />
+          <AnimatedPath
+            d={outlineBoxPath}
+            strokeWidth={7}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            animatedProps={animatedBoxProps}
+          />
+          <G clipPath="url(#clipPath)">
+            <AnimatedStroke
+              progress={progress}
+              d={checkMarkPath}
+              stroke={checkmarkColor}
+              strokeWidth={10}
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              strokeOpacity={checked || false ? 1 : 0}
+            />
+          </G>
         </Svg>
         ...
     ```
+
+## Create task item component
+
+- Create `/src/components/task-item.tsx`
+
+  - ```tsx
+    import React, { useCallback } from 'react'
+    import { Pressable } from 'react-native'
+    import { Box, useTheme, themeTools, useColorModeValue } from 'native-base'
+    import AnimatedCheckbox from './animated-checkbox'
+
+    interface Props {
+      isDone: Boolean
+      onToggleCheckbox?: () => void
+    }
+
+    const TaskItem = (props: Props) => {
+      const { isDone, onToggleCheckbox } = props
+      const theme = useTheme()
+      const highlightColor = themeTools.getColor(
+        theme,
+        useColorModeValue('blue.500', 'blue.400')
+      )
+      const boxStroke = themeTools.getColor(
+        theme,
+        useColorModeValue('muted.300', 'muted.500')
+      )
+      const checkmarkColor = themeTools.getColor(
+        theme,
+        useColorModeValue('white', 'white')
+      )
+      const activeTextColor = themeTools.getColor(
+        theme,
+        useColorModeValue('darkText', 'lightText')
+      )
+      const doneTextColor = themeTools.getColor(
+        theme,
+        useColorModeValue('muted.400', 'muted.600')
+      )
+
+      return (
+        <Box width={30} height={30} mr={2}>
+          <Pressable onPress={onToggleCheckbox}>
+            <AnimatedCheckbox
+              highlightColor={highlightColor}
+              checkmarkColor={checkmarkColor}
+              outlineboxColor={boxStroke}
+              checked={isDone}
+            />
+          </Pressable>
+        </Box>
+      )
+    }
+
+    export default TaskItem
+    ```
+
+- On `src/components/animated-checkbox.tsx`
+
+  - ```tsx
+        ...
+        interface Props {
+          checked?: boolean
+          highlightColor: string
+          checkmarkColor: string
+          outlineboxColor: string
+        }
+        const AnimatedCheckbox = (props: Props) => {
+          const {checked, checkmarkColor, highlightColor, outlineboxColor} = props;
+          ...
+    ```
+
+- On `src/screens/main.tsx`, put `import TaskItem from './components/task-item';` instead of `import AnimatedCheckbox from '../components/animated-checkbox';`
+
+  - ```tsx
+    ...
+    import TaskItem from './components/task-item';
+    ...
+          <Pressable onPress={handlePressCheckbox} >
+            <TaskItem isDone={checked}  onToggleCheckbox={handlePressCheckbox}/>
+          </Pressable>
+    ```
+
+---
 
 # React Native Reanimated Library
 
