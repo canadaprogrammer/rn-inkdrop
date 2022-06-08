@@ -241,7 +241,7 @@
 
 ## Add dark theme support
 
-- Create `/src/screens/main.tsx`
+- Create `/src/screens/main-screen.tsx`
 
   - ```tsx
     import * as React from 'react'
@@ -269,10 +269,10 @@
 
   - ```tsx
     ...
-    import Main from './src/screens/main';
+    import MainScreen from './src/screens/main-screen';
     ...
         <AppContainer>
-          <Main />
+          <MainScreen />
         </AppContainer>
         ...
     ```
@@ -298,7 +298,7 @@
     }
     ```
 
-- On `/src/screens/main.tsx`
+- On `/src/screens/main-screen.tsx`
 
   - ```tsx
     ...
@@ -394,7 +394,7 @@
     export default AnimatedCheckbox
     ```
 
-- On `/screens/main.tsx`
+- On `/screens/main-screen.tsx`
 
   - ```tsx
     ...
@@ -414,7 +414,7 @@
 
 ## Make the checkbox able to toggle
 
-- On `/src/screens/main.tsx`
+- On `/src/screens/main-screen.tsx`
 
   - ```tsx
     import React, {useCallback, useState} from 'react';
@@ -601,7 +601,7 @@
           ...
     ```
 
-- On `src/screens/main.tsx`, put `import TaskItem from './components/task-item';` instead of `import AnimatedCheckbox from '../components/animated-checkbox';`
+- On `src/screens/main-screen.tsx`, put `import TaskItem from './components/task-item';` instead of `import AnimatedCheckbox from '../components/animated-checkbox';`
 
   - ```tsx
     ...
@@ -737,7 +737,61 @@
       );
     ```
 
----
+## Integrate React-Navigation and Drawer
+
+- On `App.tsx`, put `Navigator` instead of `Main`
+
+  - ```tsx
+    import Navigator from './src/';
+    ...
+        <AppContainer>
+          <Navigator />
+        </AppContainer>
+        ...
+    ```
+
+- `yarn add react-native-gesture-handler`
+
+- Create `/src/screens/about-screen.tsx`
+
+  - ```tsx
+    import React from 'react'
+    import { Box, Text, VStack } from 'native-base'
+
+    const AboutScreen = () => {
+      return (
+        <VStack flex={1}>
+          <Box>
+            <Text>About</Text>
+          </Box>
+        </VStack>
+      )
+    }
+
+    export default AboutScreen
+    ```
+
+- Create `src/index.tsx`
+
+  - ```tsx
+    import React from 'react'
+    import { createDrawerNavigator } from '@react-navigation/drawer'
+    import MainScreen from './screens/main-screen'
+    import AboutScreen from './screens/about-screen'
+
+    const Drawer = createDrawerNavigator()
+
+    const App = () => {
+      return (
+        <Drawer.Navigator initialRouteName="Main">
+          <Drawer.Screen name="Main" component={MainScreen} />
+          <Drawer.Screen name="About" component={AboutScreen} />
+        </Drawer.Navigator>
+      )
+    }
+
+    export default App
+    ```
 
 # React Native Reanimated Library
 
