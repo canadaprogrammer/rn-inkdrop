@@ -793,6 +793,153 @@
     export default App
     ```
 
+## Implement Swipe-To-Remove Interaction
+
+- Create `/src/utils/styled.tsx`
+
+  - ```tsx
+    import React from 'react'
+    import { useStyledSystemPropsResolver } from 'native-base'
+
+    export const makeStyledComponent = (Comp: any) => {
+      return React.forwardRef(({ debug, ...props }: any, ref: any) => {
+        const [style, restProps] = useStyledSystemPropsResolver(props)
+        return (
+          <Comp {...restProps} style={style} ref={ref}>
+            {props.children}
+          </Comp>
+        )
+      })
+    }
+    ```
+
+- Create `/src/components/swipable-view.tsx`
+
+  - ```tsx
+    import React from 'react'
+    import { Dimensions } from 'react-native'
+    import {
+      PanGestureHandler,
+      PanGestureHandlerGestureEvent,
+      PanGestureHandlerProps
+    } from 'react-native-gesture-handler'
+    import Animated, {
+      useAnimatedGestureHandler,
+      useSharedValue,
+      useAnimatedStyle,
+      withTiming,
+      runOnJS
+    } from 'react-native-reanimated'
+    import { Box } from 'native-base'
+    import { makeStyledComponent } from '../utils/styled'
+
+    const StyledView = makeStyledComponent(Animated.View)
+
+    interface Props
+      extends Pick<PanGestureHandlerProps, 'simultaneousHandlers'> {
+      children: React.ReactNode
+      backView?: React.ReactNode
+      onSwipeLeft?: () => void
+    }
+
+    const { width: SCREEN_WIDTH } = Dimensions.get('window')
+    const SWIPE_THRESHOLD = -SCREEN_WIDTH * 0.2
+
+    const SwipeView = (props: Props) => {
+      const { children, backView, onSwipeLeft, simultaneousHandlers } = props
+      const translateX = useSharedValue(0)
+
+      const panGesture =
+        useAnimatedGestureHandler<PanGestureHandlerGestureEvent>({
+          onActive: event => {
+            translateX.value = Math.max(-128, Math.min(0, event.translationX))
+          },
+          onEnd: () => {
+            const shouldBeDismissed = translateX.value < SWIPE_THRESHOLD
+            if (shouldBeDismissed) {
+              translateX.value = withTiming(-SCREEN_WIDTH)
+              onSwipeLeft && runOnJS(onSwipeLeft)()
+            } else {
+              translateX.value = withTiming(0)
+            }
+          }
+        })
+
+      const facadeStyle = useAnimatedStyle(() => ({
+        transform: [
+          {
+            translateX: translateX.value
+          }
+        ]
+      }))
+
+      return (
+        <StyledView w="full">
+          {backView && (
+            <Box position="absolute" left={0} right={0} top={0} bottom={0}>
+              {backView}
+            </Box>
+          )}
+          <PanGestureHandler
+            simultaneousHandlers={simultaneousHandlers}
+            onGestureEvent={panGesture}
+          >
+            <StyledView style={facadeStyle}>{children}</StyledView>
+          </PanGestureHandler>
+        </StyledView>
+      )
+    }
+
+    export default SwipeView
+    ```
+
+- On `/src/components/task-item.tsx`
+
+  - ```tsx
+    ...
+    import {PanGestureHandlerProps} from 'react-native-gesture-handler';
+    import {Pressable, Box, useTheme, themeTools, useColorModeValue, HStack, Icon} from 'native-base';
+    import SwipableView from './swipable-view';
+    import {Feather} from '@expo/vector-icons';
+
+    interface Props extends Pick<PanGestureHandlerProps, 'simultaneousHandlers'>{
+      isDone: boolean
+      onToggleCheckbox?: () => void
+      onPressLabel?: () => void
+      onRemove?: () => void
+      subject: string
+    };
+
+    const TaskItem = (props: Props) => {
+      const {isDone, onToggleCheckbox, subject, onPressLabel, onRemove, simultaneousHandlers} = props;
+      ...
+      return (
+          <SwipableView simultaneousHandlers={simultaneousHandlers} onSwipeLeft={onRemove}
+            backView={
+              <Box w="full" h="full" bg="red.500" alignItems="flex-end" justifyContent="center" pr={4}>
+                <Icon color="white" as={<Feather name="trash-2" />} size="sm" />
+              </Box>
+            }>
+            <HStack alignItems="center" w="full" px={4} py={2} bg={useColorModeValue('warmGray.50', 'primary.900')}>
+              ...
+              <AnimatedTaskLabel textColor={activeTextColor} inactiveTextColor={doneTextColor} strikethrough={isDone}>
+                {subject}
+              </AnimatedTaskLabel>
+            </HStack>
+          </SwipableView>
+        ...
+    ```
+
+- On `/src/screens/main-screen.tsx`
+
+  - ```tsx
+    ...
+        <Center _dark={{bg: 'blueGray.900'}} _light={{bg: 'blueGray.50'}} flex={1}>
+          <VStack space={5} alignItems="center" w="full">
+            <TaskItem isDone={checked} onToggleCheckbox={handlePressCheckbox} subject="Task Item"/>
+        ...
+    ```
+
 # React Native Reanimated Library
 
 ## Fundamentals
