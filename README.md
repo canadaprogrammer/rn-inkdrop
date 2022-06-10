@@ -940,6 +940,58 @@
         ...
     ```
 
+## Make Task Item Editable
+
+- On `/src/screens/main-screen.tsx`
+
+  - ```tsx
+    ...
+    const [subject, setSubject] = useState('Task Item');
+    const [isEditing, setEditing] = useState(false);
+    ...
+          <TaskItem
+            ...
+            isEditing={isEditing}
+            subject={subject}
+            onPressLabel={() => setEditing(true)}
+            onChangeSubject={setSubject}
+            onFinishEditing={() => setEditing(false)}
+          />
+          ...
+    ```
+
+- On `/src/components/task-item.tsx`
+
+  - ```tsx
+    import {..., Input} from 'native-base';
+    import { NativeSyntheticEvent, TextInputChangeEventData } from 'react-native';
+    ...
+    interface Props extends Pick<PanGestureHandlerProps, 'simultaneousHandlers'>{
+      ...
+      isEditing: boolean
+      onChangeSubject?: (subject: string) => void
+      onFinishEditing?: () => void
+    };
+    const TaskItem = (props: Props) => {
+      const {..., isEditing, onChangeSubject, onFinishEditing} = props;
+      ...
+    const handleChangeSubject = useCallback((e: NativeSyntheticEvent<TextInputChangeEventData>) => {
+      onChangeSubject && onChangeSubject(e.nativeEvent.text)
+    }, [onChangeSubject]);
+
+    return (
+      ...
+          {isEditing ? (
+            <Input placeholder="Task" value={subject} variant="unstyled" fontSize={19} px={1} py={0} autoFocus blurOnSubmit onChange={handleChangeSubject} onBlur={onFinishEditing} />
+          ) : (
+            <AnimatedTaskLabel textColor={activeTextColor} inactiveTextColor={doneTextColor} strikethrough={isDone} onPress={onPressLabel}>
+              {subject}
+            </AnimatedTaskLabel>
+          )}
+         </HStack>
+        ...
+    ```
+
 # React Native Reanimated Library
 
 ## Fundamentals
