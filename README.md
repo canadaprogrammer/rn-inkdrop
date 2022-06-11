@@ -992,6 +992,226 @@
         ...
     ```
 
+## Create Task List Component
+
+- Tasks will be able to remove and add.
+
+- Create `/src/components/task-list.tsx`
+
+  - ```tsx
+    import React, { useCallback, useRef } from 'react'
+    import { AnimatePresence, View } from 'moti'
+    import {
+      PanGestureHandlerProps,
+      ScrollView
+    } from 'react-native-gesture-handler'
+    import TaskItem from './task-item'
+    import { makeStyledComponent } from '../utils/styled'
+    import { ItemClick } from 'native-base/lib/typescript/components/composites/Typeahead/useTypeahead/types'
+
+    const StyledView = makeStyledComponent(View)
+    const StyledScrollView = makeStyledComponent(ScrollView)
+
+    interface TaskItemData {
+      id: string
+      subject: string
+      done: boolean
+    }
+
+    interface TaskListProps {
+      data: Array<TaskItemData>
+      editingItemId: string | null
+      onToggleItem: (item: TaskItemData) => void
+      onChangeSubject: (item: TaskItemData, newSubject: string) => void
+      onFinishEditing: (item: TaskItemData) => void
+      onPressLabel: (item: TaskItemData) => void
+      onRemoveItem: (item: TaskItemData) => void
+    }
+
+    interface TaskItemProps
+      extends Pick<PanGestureHandlerProps, 'simultaneousHandlers'> {
+      data: TaskItemData
+      isEditing: boolean
+      onToggleItem: (item: TaskItemData) => void
+      onChangeSubject: (item: TaskItemData, newSubject: string) => void
+      onFinishEditing: (item: TaskItemData) => void
+      onPressLabel: (item: TaskItemData) => void
+      onRemove: (item: TaskItemData) => void
+    }
+
+    export const AnimatedTaskItem = (props: TaskItemProps) => {
+      const {
+        simultaneousHandlers,
+        data,
+        isEditing,
+        onToggleItem,
+        onChangeSubject,
+        onFinishEditing,
+        onPressLabel,
+        onRemove
+      } = props
+      const handleToggleCheckbox = useCallback(() => {
+        onToggleItem(data)
+      }, [data, onToggleItem])
+      const handleChangeSubject = useCallback(
+        subject => {
+          onChangeSubject(data, subject)
+        },
+        [data, onChangeSubject]
+      )
+      const handleFinishEditing = useCallback(() => {
+        onFinishEditing(data)
+      }, [data, onFinishEditing])
+      const handlePressLabel = useCallback(() => {
+        onPressLabel(data)
+      }, [data, onPressLabel])
+      const handleRemove = useCallback(() => {
+        onRemove(data)
+      }, [data, onRemove])
+      return (
+        <StyledView
+          w="full"
+          from={{ opacity: 0, scale: 0.5, marginBottom: -46 }}
+          animate={{ opacity: 1, scale: 1, marginBottom: 0 }}
+          exit={{ opacity: 0, scale: 0.5, marginBottom: -46 }}
+        >
+          <TaskItem
+            simultaneousHandlers={simultaneousHandlers}
+            subject={data.subject}
+            isDone={data.done}
+            isEditing={isEditing}
+            onToggleCheckbox={handleToggleCheckbox}
+            onChangeSubject={handleChangeSubject}
+            onFinishEditing={handleFinishEditing}
+            onPressLabel={handlePressLabel}
+            onRemove={handleRemove}
+          />
+        </StyledView>
+      )
+    }
+
+    export default function TaskList(props: TaskListProps) {
+      const {
+        data,
+        editingItemId,
+        onToggleItem,
+        onChangeSubject,
+        onFinishEditing,
+        onPressLabel,
+        onRemoveItem
+      } = props
+      const refScrollView = useRef(null)
+
+      return (
+        <StyledScrollView ref={refScrollView} w="full">
+          <AnimatePresence>
+            {data.map(item => (
+              <AnimatedTaskItem
+                key={item.id}
+                data={item}
+                simultaneousHandlers={refScrollView}
+                isEditing={item.id === editingItemId}
+                onToggleItem={onToggleItem}
+                onChangeSubject={onChangeSubject}
+                onFinishEditing={onFinishEditing}
+                onPressLabel={onPressLabel}
+                onRemove={onRemoveItem}
+              />
+            ))}
+          </AnimatePresence>
+        </StyledScrollView>
+      )
+    }
+    ```
+
+- On `src/screens/main-screen.tsx`
+
+  - ```tsx
+    ...
+    import {..., Fab, Icon} from 'native-base';
+    import TaskList from '../components/task-list';
+    import {AntDesign} from '@expo/vector-icons';
+    import shortid from 'shortid';
+
+    const initialData = [
+      {
+        id: shortid.generate(),
+        subject: 'Buy movie tickets for Friday',
+        done:false
+      },
+      {
+        id: shortid.generate(),
+        subject: 'Make a React Native tutorial',
+        done: false
+      }
+    ];
+    export default function MainScreen() {
+      const [data, setData] = useState(initialData);
+      const [editingItemId, setEditingItemId] = useState<string | null>(null)
+
+      const handleToggleTaskItem = useCallback(item => {
+        setData(prevData => {
+          const newData = [...prevData];
+          const index = prevData.indexOf(item);
+          newData[index] = {
+            ...item,
+            done: !item.done
+          }
+          return newData;
+        })
+      }, []);
+      const handleChangeTaskItemSubject = useCallback((item, newSubject) => {
+        setData(prevData => {
+          const newData = [...prevData];
+          const index = prevData.indexOf(item);
+          newData[index] = {
+            ...item,
+            subject: newSubject
+          }
+          return newData;
+        })
+      }, []);
+      const handleFinishEditingTaskItem = useCallback(_item => {
+        setEditingItemId(null);
+      }, []);
+      const handlePressTaskItemLabel = useCallback(item => {
+        setEditingItemId(item.id);
+      }, []);
+      const handleRemoveItem = useCallback(item => {
+        setData(prevData => {
+          const newData = prevData.filter(i => i !== item);
+          return newData;
+        });
+      }, []);
+
+      return (
+        <Center _dark={{bg: 'blueGray.900'}} _light={{bg: 'blueGray.50'}} flex={1}>
+          <VStack space={5} alignItems="center" w="full">
+            <TaskList data={data} onToggleItem={handleToggleTaskItem} onChangeSubject={handleChangeTaskItemSubject} onFinishEditing={handleFinishEditingTaskItem} onPressLabel={handlePressTaskItemLabel} onRemoveItem={handleRemoveItem} editingItemId={editingItemId} />
+            <ThemeToggle />
+          </VStack>
+          <Fab position="absolute" renderInPortal={false} size="sm"
+            icon={<Icon color="white" as={<AntDesign name="plus" />} size="sm" />}
+            colorScheme={useColorModeValue('blue', 'darkBlue')}
+            bg={useColorModeValue('blue.500', 'blue.400')}
+            onPress={() => {
+              const id = shortid.generate();
+              setData([
+                {
+                  id,
+                  subject: '',
+                  done: false
+                },
+                ...data
+              ]);
+              setEditingItemId(id)
+            }}
+          />
+        </Center>
+      )
+    }
+    ```
+
 # React Native Reanimated Library
 
 ## Fundamentals
