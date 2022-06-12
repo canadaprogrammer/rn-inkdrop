@@ -1,7 +1,7 @@
 import React, {useCallback, useState} from 'react';
-import {Text, Box, Center, VStack, useColorModeValue, Fab, Icon} from 'native-base';
+import {Center, VStack, useColorModeValue, Fab, Icon} from 'native-base';
+import AnimatedColorBox from '../components/animated-color-box';
 import ThemeToggle from '../components/theme-toggle';
-import TaskItem from '../components/task-item';
 import TaskList from '../components/task-list';
 import {AntDesign} from '@expo/vector-icons';
 import shortid from 'shortid';
@@ -58,7 +58,7 @@ export default function MainScreen() {
   }, []);
 
   return (
-    <Center _dark={{bg: 'blueGray.900'}} _light={{bg: 'blueGray.50'}} flex={1}>
+    <AnimatedColorBox flex={1} bg={useColorModeValue('warmGray.50', 'primary.900')} w="full">
       <VStack space={5} alignItems="center" w="full">
         <TaskList data={data} onToggleItem={handleToggleTaskItem} onChangeSubject={handleChangeTaskItemSubject} onFinishEditing={handleFinishEditingTaskItem} onPressLabel={handlePressTaskItemLabel} onRemoveItem={handleRemoveItem} editingItemId={editingItemId} />
         <ThemeToggle />
@@ -80,6 +80,6 @@ export default function MainScreen() {
           setEditingItemId(id)
         }}
       />
-    </Center>
+    </AnimatedColorBox>
   )
 }

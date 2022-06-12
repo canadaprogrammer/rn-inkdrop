@@ -1212,6 +1212,75 @@
     }
     ```
 
+## Animate Background Color
+
+- Create `/src/utils/us-previous.ts`
+
+  - ```ts
+    import { useEffect, useRef } from 'react'
+
+    export default function usePrevious(value: any) {
+      const ref = useRef()
+      useEffect(() => {
+        ref.current = value
+      })
+      return ref.current
+    }
+    ```
+
+- Create `/src/components/animated-color-box.tsx`
+
+  - ```tsx
+    import React, { useEffect } from 'react'
+    import { Box, useTheme, themeTools } from 'native-base'
+    import usePrevious from '../utils/use-previous'
+    import Animated, {
+      useSharedValue,
+      useAnimatedStyle,
+      withTiming,
+      interpolateColor
+    } from 'react-native-reanimated'
+
+    const AnimatedBox = Animated.createAnimatedComponent(Box)
+
+    const AnimatedColorBox = ({ bg, ...props }: any) => {
+      const theme = useTheme()
+      const hexBg = themeTools.getColor(theme, bg)
+      const prevHexBg = usePrevious(hexBg)
+      const progress = useSharedValue(0)
+
+      useEffect(() => {
+        progress.value = 0
+      }, [hexBg])
+      const animatedStyles = useAnimatedStyle(() => {
+        progress.value = withTiming(1, { duration: 200 })
+        return {
+          backgroundColor: interpolateColor(
+            progress.value,
+            [0, 1],
+            [prevHexBg || hexBg, hexBg]
+          )
+        }
+      }, [hexBg])
+      return <AnimatedBox {...props} style={animatedStyles} />
+    }
+
+    export default AnimatedColorBox
+    ```
+
+- On `src/screens/main-screen.tsx`
+
+  - ```tsx
+    import AnimatedColorBox from '../components/animated-color-box';
+    ...
+      return (
+        <AnimatedColorBox flex={1} bg={useColorModeValue('warmGray.50', 'primary.900')} w="full">
+          <VStack space={5} alignItems="center" w="full">
+          ...
+        </AnimatedColorBox>
+        ...
+    ```
+
 # React Native Reanimated Library
 
 ## Fundamentals
