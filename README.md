@@ -1281,6 +1281,94 @@
         ...
     ```
 
+## Add Masthead
+
+- On `src/index.tsx`, add screenOptions, `<Drawer.Navigator initialRouteName="Main" screenOptions={{headerShown:false, drawerType:'back', overlayColor: ''}}>`
+
+- Create `/src/components/masthead.tsx`
+
+  - ```tsx
+    import React from 'react'
+    import { ImageSourcePropType } from 'react-native'
+    import { Box, VStack, Heading, Image } from 'native-base'
+
+    interface Props {
+      title: string
+      image: ImageSourcePropType
+      children: React.ReactNode
+    }
+
+    const Masthead = ({ title, image, children }: Props) => {
+      return (
+        <VStack h="300px" pb={5}>
+          <Image
+            position="absolute"
+            left={0}
+            right={0}
+            bottom={0}
+            w="full"
+            h="300px"
+            resizeMode="cover"
+            source={image}
+            alt="masthead image"
+          />
+          {children}
+          <Box flex={1} />
+          <Heading color="white" p={6} size="xl">
+            {title}
+          </Heading>
+        </VStack>
+      )
+    }
+
+    export default Masthead
+    ```
+
+- Create `/src/components/navbar.tsx`
+
+  - ```tsx
+    import React, { useCallback } from 'react'
+    import { HStack, IconButton } from 'native-base'
+    import { Feather } from '@expo/vector-icons'
+    import { useNavigation } from '@react-navigation/native'
+    import { DrawerNavigationProp } from '@react-navigation/drawer'
+
+    const NavBar = () => {
+      const navigation = useNavigation<DrawerNavigationProp<{}>>()
+      const handlePressMenuButton = useCallback(() => {
+        navigation.openDrawer()
+      }, [navigation])
+
+      return (
+        <HStack w="full" h={40} alignItems="center" alignContent="center" p={4}>
+          <IconButton
+            onPress={handlePressMenuButton}
+            borderRadius={100}
+            _icon={{ as: Feather, name: 'menu', size: 6, color: 'white' }}
+          />
+        </HStack>
+      )
+    }
+
+    export default NavBar
+    ```
+
+- On `/src/screens/main-screen.tsx`
+
+  - ```tsx
+    import Masthead from '../components/masthead';
+    import NavBar from '../components/navbar';
+    ...
+        <AnimatedColorBox ...>
+          <Masthead title="What's up, Jin!" image={require('../assets/masthead.jpg')}>
+            <NavBar />
+          </Masthead>
+          <VStack flex={1} space={1} bg={useColorModeValue('warmGray.50', 'primary.900')} mt="-20px" borderTopLeftRadius="20px" borderTopRightRadius="20px" pt="20px">
+            <TaskList ... />
+          </VStack>
+          ...
+    ```
+
 # React Native Reanimated Library
 
 ## Fundamentals
